@@ -1,37 +1,35 @@
 const express = require('express');
 const app = express();
-const crypto = require('crypto');
 const port = 5000;
-const jwt = require('jsonwebtoken')
-app.use(express.json());
-const secret = "supERduPErBIGscreen";
 
+
+app.use(express.json());
 
 const bcrypt = require('bcrypt');   
 const saltRounds = 10;
 const myplainText = "ReskillAmericans123";
-
+let keepHash;
 
 bcrypt.hash(myplainText, saltRounds)   
   .then(hash => {
-      console.log(hash);
-  });
+      keepHash = hash;
+  })
+  .catch(err => {
+      console.log(err)
+  }) 
 
-  app.post('/create-token', (req, res) => {    
-    const payload = {
-        username: req.body.username,
-        id: req.body.id
-    };
-    
-    const expiry = 36000   
-    jwt.sign(payload, secret, {expiresIn: expiry}, (err, token) => {
-        if (err) {
-            return res.status(500).json({err})
-        }else {
-            return res.status(200).json({token})
-        }
-    })     
-}) 
+
+  app.post('/checkPassword', (req, res) => { 
+      let password = req.body.pass
+      bcrypt.compare(password, keepHash)
+      .then(result  => {
+          return res.json(result)
+      })  
+      .catch(err => {
+          return res.json(err)
+      }) 
+});     
+ 
 
 
 
